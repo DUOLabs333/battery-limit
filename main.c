@@ -1,10 +1,5 @@
-#include <unistd.h>
-#include <stdio.h>
-#include <stdlib.h>
-#include <string.h>
 #include <IOKit/IOKitLib.h>
 #include "smc.h"
-#include <libkern/OSAtomic.h>
 #include <IOKit/ps/IOPowerSources.h>
 #include <IOKit/ps/IOPSKeys.h>
 #include <CoreFoundation/CoreFoundation.h>
@@ -77,7 +72,7 @@ int main(int argc, char *argv[]){
 	if (compare_string(action,"charging")){
 			printf("Setting charging to %s%%\n",(compare_string(setting,"off")) ? "off" : "on");
 			toggle_charging((setting=="off") ? 0 : 1);
-			
+
 	}else if (compare_string(action,"charge")){
 		toggle_charging(1);
 		limit = (setting=="") ? 80 : atoi(setting);
