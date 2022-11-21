@@ -69,14 +69,14 @@ bool is_charging(CFDictionaryRef info_dict){
 	
 }
 
-string get_daemon(bool kill1){
+string get_daemon(bool should_kill){
 	std::ifstream daemon_log("/tmp/battery_info.txt");
 	vector<string> contents;
 	string line;
 	while(getline(daemon_log,line)){
 		contents.push_back(line);
 	}
-	if (kill1){
+	if (should_kill){
 		kill(stoi(contents[1]),SIGINT);
 		return "";
 	}else{
@@ -86,6 +86,9 @@ string get_daemon(bool kill1){
 
 void write_to_file(string format_string,int limit){
 	ofstream daemon_log("/tmp/battery_info.txt");
+	if (!daemon_log.good()){
+		return;
+	}
 	char str[80];
 	sprintf(str,(format_string+" %i%%").c_str(),limit);
 	//daemon_log << format(format_string,get_battery_percentage(info_dict)) << endl;
@@ -97,6 +100,7 @@ void write_to_file(string format_string,int limit){
 int setup(string format_string,string setting){
 	signal(SIGINT, intHandler);
 	signal(SIGHUP,SIG_IGN);
+	get_daemon(1);
 	int limit = (setting=="") ? 80 : stoi(setting);
 	printf((format_string+" %i%%\n").c_str(),limit);
 	write_to_file(format_string,limit);
@@ -153,7 +157,7 @@ int main(int argc, char *argv[]){
 		bool charging=is_charging(info_dict);
 		int percentage=get_battery_percentage(info_dict);
 		printf("Charge: %i%%\n",percentage);
-		printf("Charging: %s\n",(charging) ? "Yes" : "No");
+		printf("Charging: %s\n",(charging) ? "Enabled" : "Disabled");
 		ifstream file("/tmp/battery_info.txt");
 		if (file.good()){
 			printf("%s\n",get_daemon(0).c_str());
