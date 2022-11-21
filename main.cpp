@@ -78,6 +78,8 @@ string get_daemon(bool should_kill){
 	}
 	if (should_kill){
 		kill(stoi(contents[1]),SIGINT);
+		while (kill(contents[1],0)){
+		}
 		return "";
 	}else{
 		return contents[0];
