@@ -71,6 +71,9 @@ bool is_charging(CFDictionaryRef info_dict){
 
 string get_daemon(bool should_kill){
 	std::ifstream daemon_log("/tmp/battery_info.txt");
+	if (!daemon_log.good()){
+		return "";
+	}
 	vector<string> contents;
 	string line;
 	while(getline(daemon_log,line)){
