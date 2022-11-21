@@ -117,7 +117,8 @@ int main(int argc, char *argv[]){
 	string setting=(argc>=3) ? argv[2] : "";
 	int limit;
 	if (action=="charging"){
-			printf("Setting charging to %s%%\n",(setting=="off") ? "off" : "on");
+			get_daemon(1);
+			printf("Setting charging to %s\n",(setting=="off") ? "off" : "on");
 			toggle_charging((setting=="off") ? 0 : 1);
 
 	}else if (action=="charge"){
