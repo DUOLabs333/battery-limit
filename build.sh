@@ -1,1 +1,1 @@
-gcc main.c smc.c -mmacosx-version-min=10.4  -Wall -framework IOKit -framework CoreFoundation -o battery
+clang++ main.cpp smc.cpp -mmacosx-version-min=10.4  -Wall -std=gnu++17 -framework IOKit -framework CoreFoundation -o battery
