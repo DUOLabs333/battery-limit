@@ -77,8 +77,9 @@ string get_daemon(bool should_kill){
 		contents.push_back(line);
 	}
 	if (should_kill){
-		kill(stoi(contents[1]),SIGINT);
-		while (kill(contents[1],0)){
+		int pid=stoi(contents[1]);
+		kill(pid,SIGINT);
+		while (kill(pid,0)==0){
 		}
 		return "";
 	}else{
