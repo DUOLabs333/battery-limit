@@ -2,6 +2,7 @@
 #include "smc.hpp"
 #include <IOKit/ps/IOPowerSources.h>
 #include <IOKit/ps/IOPSKeys.h>
+#include <IOKit/pwr_mgt/IOPMLib.h>
 #include <CoreFoundation/CoreFoundation.h>
 #include <CoreFoundation/CFNumber.h>
 #include <signal.h> 
@@ -35,6 +36,7 @@ void toggle_charging(bool mode){
 	SMCClose(g_conn);
 	
 }
+
 void test(){
 	printf("Hello!\n");
 }
@@ -63,9 +65,26 @@ int get_battery_percentage(CFDictionaryRef info_dict){
 		return percentage;
 }
 
-bool is_charging(CFDictionaryRef info_dict){
-	CFBooleanRef charging= (CFBooleanRef) CFDictionaryGetValue(info_dict,CFSTR(kIOPSIsChargingKey));
-	return (charging==kCFBooleanTrue) ? true : false;
+
+
+bool is_charging(){
+	UInt32Char_t B = { 0 };
+	strncpy(B,"CH0B",sizeof(B));
+	B[sizeof(B) - 1] = '\0';
+
+	SMCVal_t val;
+
+	io_connect_t g_conn=0;
+	SMCOpen(&g_conn);
+	SMCReadKey2(B,&val,g_conn);
+	SMCClose(g_conn);
+
+	char toggle[val.dataSize];
+	for (int i = 0; i < val.dataSize; i++){
+		sprintf(&toggle[i],"%02x",(unsigned char) val.bytes[i]);
+	}
+	return (strcmp(toggle,"00")==0) ? true : false;
+	
 	
 }
 
@@ -112,10 +131,35 @@ int setup(string format_string,string setting){
 	write_to_file(format_string,limit);
 	return limit;
 }
+IOPMAssertionID assertionID;
+IOReturn success;
+void toggle_discharge(bool mode){
+	if(!mode){
+		CFStringRef reasonForActivity= CFSTR("Testing");
+		success = IOPMAssertionCreateWithName(CFSTR("DisableInflow"), 
+                                kIOPMAssertionLevelOn, reasonForActivity, &assertionID); 
+	}else{
+		if (success == kIOReturnSuccess){
+
+		    success = IOPMAssertionRelease(assertionID);
+		}
+	}
+}
+void inttest(int dummy){
+	toggle_discharge(1);
+	exit(0);
+}
 int main(int argc, char *argv[]){
 	string action=(argc>=2) ? argv[1] : "maintain";
 	string setting=(argc>=3) ? argv[2] : "";
 	int limit;
+	if(false){
+		signal(SIGINT, inttest);
+		toggle_discharge(0);
+		while(true){
+			sleep(1);
+		}
+	}
 	if (action=="charging"){
 			get_daemon(1);
 			printf("Setting charging to %s\n",(setting=="off") ? "off" : "on");
@@ -138,7 +182,7 @@ int main(int argc, char *argv[]){
 		limit=setup("Maintaining charge at",setting);
 		while (true){
 			CFDictionaryRef info_dict=get_battery_info();
-			bool charging=is_charging(info_dict);
+			bool charging=is_charging();
 			int percentage=get_battery_percentage(info_dict);
 			if (percentage>= limit && charging){
 				toggle_charging(0);
@@ -161,7 +205,7 @@ int main(int argc, char *argv[]){
 		}
 	}else if(action=="status"){
 		CFDictionaryRef info_dict=get_battery_info();
-		bool charging=is_charging(info_dict);
+		bool charging=is_charging();
 		int percentage=get_battery_percentage(info_dict);
 		printf("Charge: %i%%\n",percentage);
 		printf("Charging: %s\n",(charging) ? "Enabled" : "Disabled");
