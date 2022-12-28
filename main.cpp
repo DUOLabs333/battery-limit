@@ -164,6 +164,7 @@ int main(int argc, char *argv[]){
 			if (percentage>= limit){
 				toggle_charging(0);
 				break;
+			sleep(60);
 			}
 		}
 		printf("Charged to %i%%\n",limit);
@@ -192,6 +193,7 @@ int main(int argc, char *argv[]){
 				toggle_discharge(0);
 				break;
 			}
+			sleep(60);
 		}
 	}else if(action=="status"){
 		bool charging=is_charging();
@@ -202,5 +204,8 @@ int main(int argc, char *argv[]){
 		if (file.good()){
 			printf("%s\n",get_daemon(0).c_str());
 		}
+	}else if(action=="reset"){
+		get_daemon(true);
+		intHandler(1);
 	}
 }
