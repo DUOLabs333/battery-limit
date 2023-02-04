@@ -138,6 +138,7 @@ void intHandler ( int dummy){
 }
 
 int setup(string format_string,string setting){
+	if (fork()==0){
 	signal(SIGINT, intHandler);
 	signal(SIGHUP,SIG_IGN);
 	get_daemon(1);
@@ -145,6 +146,9 @@ int setup(string format_string,string setting){
 	printf((format_string+" %i%%\n").c_str(),limit);
 	write_to_file(format_string,limit);
 	return limit;
+	}else{
+		exit(0);
+	}
 }
 
 int main(int argc, char *argv[]){
