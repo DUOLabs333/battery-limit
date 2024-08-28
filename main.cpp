@@ -132,7 +132,7 @@ void toggle_discharge(bool mode){
 
 void intHandler ( int dummy){
 	toggle_charging(1); //By default, enable charging when exiting
-	toggle_discharge(0);
+	toggle_discharge(0); //0 enables discharge, even on adapter
 	remove("/tmp/battery_info.txt");
 	exit(0);
 }
